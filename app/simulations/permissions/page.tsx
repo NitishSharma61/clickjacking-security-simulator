@@ -699,8 +699,14 @@ startxref
 
           {/* Stop Button */}
           <button
-            onClick={() => window.location.reload()}
+            onClick={(e) => {
+              e.preventDefault()
+              e.stopPropagation()
+              console.log('🛑 Stop Surveillance button clicked - reloading...')
+              window.location.reload()
+            }}
             className="w-full bg-gray-800 text-white py-2 rounded-lg hover:bg-gray-700 transition-colors text-sm"
+            type="button"
           >
             🛑 Stop Surveillance (Educational Demo Only)
           </button>

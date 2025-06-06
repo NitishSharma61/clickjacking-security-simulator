@@ -43,8 +43,29 @@ export default function SplitScreenSimulation({
   }
 
   const resetSimulation = () => {
+    console.log('🔄 Reset button clicked - reloading page...')
+    
+    // Show alert to confirm button works
+    alert('Reset button clicked! Page will reload now.')
+    
     // Simply reload the page to reset everything completely
-    window.location.reload()
+    try {
+      if (typeof window !== 'undefined') {
+        window.location.reload()
+      }
+    } catch (error) {
+      console.error('❌ Error reloading page:', error)
+      // Fallback method
+      try {
+        if (typeof window !== 'undefined') {
+          window.location.href = window.location.href
+        }
+      } catch (fallbackError) {
+        console.error('❌ Fallback reload also failed:', fallbackError)
+        // Final fallback - manually reset states
+        window.history.go(0)
+      }
+    }
   }
 
   return (
@@ -60,11 +81,27 @@ export default function SplitScreenSimulation({
             {showAttackerView ? 'Hide' : 'Show'} Attacker View
           </button>
           <button
-            onClick={resetSimulation}
-            className="flex items-center gap-2 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
+            onClick={(e) => {
+              e.preventDefault()
+              e.stopPropagation()
+              console.log('🖱️ Reset button DOM event triggered')
+              resetSimulation()
+            }}
+            className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors border-2 border-yellow-400"
+            type="button"
+            style={{ 
+              backgroundColor: '#dc2626',
+              color: 'white',
+              padding: '8px 16px',
+              borderRadius: '8px',
+              border: '2px solid #facc15',
+              cursor: 'pointer',
+              fontSize: '16px',
+              fontWeight: 'bold'
+            }}
           >
             <RotateCcw size={20} />
-            Reset
+            🔄 RESET PAGE 🔄
           </button>
         </div>
       </div>
@@ -203,8 +240,14 @@ export default function SplitScreenSimulation({
 
               <div className="flex gap-4 justify-center">
                 <button
-                  onClick={resetSimulation}
+                  onClick={(e) => {
+                    e.preventDefault()
+                    e.stopPropagation()
+                    console.log('🔄 Try Again button clicked')
+                    resetSimulation()
+                  }}
                   className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                  type="button"
                 >
                   Try Again
                 </button>
