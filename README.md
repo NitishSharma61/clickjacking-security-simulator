@@ -2,9 +2,35 @@
 
 An educational web application that demonstrates how clickjacking attacks work through hands-on experience. This platform helps users understand cybersecurity threats through interactive simulations in a safe environment.
 
+## 🌐 Live Demo
+
+**Try it now:** [https://clickjacking-security-simulator.vercel.app](https://clickjacking-security-simulator.vercel.app)
+
+![Live Demo Preview](photo%201.png)
+
 ## 🎯 Purpose
 
 This platform creates lasting security awareness through experiential learning. Users interact with realistic-looking interfaces that contain hidden malicious elements, experience being "clickjacked," and then see exactly how the attack worked.
+
+## 📸 Screenshots
+
+### Homepage - Choose Your Attack Simulation
+![Homepage](photo%201.png)
+
+### Social Media Clickjacking - Cat Zomato Video Attack
+![Social Media Simulation](photo%202.png)
+
+### Banking Credential Theft - PayPal Attack Flow
+![Banking Simulation](photo%203.png)
+
+### Permission Hijacking - Zoom Security Update Attack
+![Permission Simulation](photo%204.png)
+
+### Split-Screen View - Attacker vs Victim Perspective
+![Split Screen View](photo%205.png)
+
+### Analytics Dashboard - Real-time Attack Tracking
+![Analytics Dashboard](photo%206.png)
 
 ## 🚀 Features
 
