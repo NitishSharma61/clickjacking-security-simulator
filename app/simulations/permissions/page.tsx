@@ -31,6 +31,16 @@ export default function PermissionsSimulation() {
     setDownloadProgress(0)
   }
 
+  // Reset simulation to initial state
+  const resetSimulation = () => {
+    stopAllStreams()
+    setPermissionRequested(false)
+    setAttackSuccess(false)
+    setShowFakeDownload(false)
+    setShowFakePermissionDialog(false)
+    setPermissionStep('camera')
+  }
+
   // Cleanup on component unmount
   useEffect(() => {
     return () => {
@@ -698,7 +708,7 @@ startxref
 
           {/* Stop Button */}
           <button
-            onClick={stopAllStreams}
+            onClick={resetSimulation}
             className="w-full bg-gray-800 text-white py-2 rounded-lg hover:bg-gray-700 transition-colors text-sm"
           >
             🛑 Stop Surveillance (Educational Demo Only)
@@ -823,6 +833,7 @@ startxref
       }
       warningSignsComponent={WarningSignsComponent}
       maliciousOverlay={MaliciousOverlay}
+      onReset={resetSimulation}
     />
   )
 }

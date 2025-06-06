@@ -13,6 +13,7 @@ interface SplitScreenSimulationProps {
   explanation: string
   warningSignsComponent?: React.ReactNode
   maliciousOverlay?: React.ComponentType<{ transparencyLevel: number }>
+  onReset?: () => void
 }
 
 export default function SplitScreenSimulation({
@@ -23,7 +24,8 @@ export default function SplitScreenSimulation({
   onAttackDefended,
   explanation,
   warningSignsComponent,
-  maliciousOverlay: MaliciousOverlay
+  maliciousOverlay: MaliciousOverlay,
+  onReset
 }: SplitScreenSimulationProps) {
   const [showAttackerView, setShowAttackerView] = useState(true)
   const [attackRevealed, setAttackRevealed] = useState(false)
@@ -47,6 +49,10 @@ export default function SplitScreenSimulation({
     setAttackRevealed(false)
     setShowResult(false)
     setTransparencyLevel(0)
+    setWasSuccessful(false)
+    if (onReset) {
+      onReset()
+    }
   }
 
   return (

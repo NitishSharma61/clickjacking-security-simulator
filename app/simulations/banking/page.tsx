@@ -28,6 +28,31 @@ export default function BankingSimulation() {
   const [realDataWarning, setRealDataWarning] = useState(false)
   const [showPayPalLogin, setShowPayPalLogin] = useState(false)
   const [paypalStep, setPaypalStep] = useState<'login' | 'verify' | 'loading'>('login')
+
+  const resetSimulation = () => {
+    setFormData({
+      cardNumber: '',
+      cardHolder: '',
+      expiryDate: '',
+      cvv: '',
+    })
+    setStolenData({
+      paypalEmail: '',
+      paypalPassword: '',
+      cardNumber: '',
+      cardHolder: '',
+      expiryDate: '',
+      cvv: '',
+    })
+    setShowPassword(false)
+    setAttackSuccess(false)
+    setPaymentCompleted(false)
+    setShowSecondAlert(false)
+    setShowThirdAlert(false)
+    setRealDataWarning(false)
+    setShowPayPalLogin(false)
+    setPaypalStep('login')
+  }
   const [paypalEmail, setPaypalEmail] = useState('')
   const [paypalPassword, setPaypalPassword] = useState('')
 
@@ -742,6 +767,7 @@ export default function BankingSimulation() {
       }
       warningSignsComponent={WarningSignsComponent}
       maliciousOverlay={MaliciousOverlay}
+      onReset={resetSimulation}
     />
   )
 }
