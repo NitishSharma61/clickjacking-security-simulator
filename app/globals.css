@@ -1,0 +1,38 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: #ffffff;
+    --foreground: #1f2937;
+  }
+
+  .dark {
+    --background: #111827;
+    --foreground: #f9fafb;
+  }
+
+  body {
+    background-color: var(--background);
+    color: var(--foreground);
+  }
+}
+
+@layer components {
+  .clickjacking-overlay {
+    @apply absolute inset-0 transition-opacity duration-300;
+  }
+  
+  .malicious-layer {
+    @apply absolute inset-0 z-20 pointer-events-auto;
+  }
+  
+  .legitimate-layer {
+    @apply absolute inset-0 z-10;
+  }
+  
+  .revelation-animation {
+    @apply transform transition-all duration-1000 ease-in-out;
+  }
+}
