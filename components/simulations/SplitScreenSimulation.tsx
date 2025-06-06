@@ -72,6 +72,65 @@ export default function SplitScreenSimulation({
     <div className="max-w-7xl mx-auto px-4 py-8">
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">{title}</h1>
+        
+        {/* DEBUGGING: Completely isolated button area */}
+        <div 
+          className="p-4 bg-yellow-100 border-4 border-red-500 rounded-lg mb-4"
+          style={{ position: 'relative', zIndex: 10000 }}
+        >
+          <h2 className="text-lg font-bold text-red-800 mb-2">🔧 DEBUG ZONE - ISOLATED BUTTONS</h2>
+          
+          <div className="flex gap-4">
+            {/* Test if ANY button works */}
+            <button
+              onClick={() => {
+                alert('TEST BUTTON WORKS!')
+                console.log('Test button clicked successfully')
+              }}
+              style={{
+                backgroundColor: '#16a34a',
+                color: 'white',
+                padding: '12px 24px',
+                border: 'none',
+                borderRadius: '8px',
+                fontSize: '16px',
+                fontWeight: 'bold',
+                cursor: 'pointer'
+              }}
+            >
+              🟢 TEST CLICK
+            </button>
+            
+            {/* Reset button with maximum isolation */}
+            <button
+              onClick={() => {
+                alert('RESET BUTTON CLICKED! Reloading in 2 seconds...')
+                console.log('🔄 Reset button clicked - starting reload')
+                setTimeout(() => {
+                  try {
+                    location.reload()
+                  } catch (e) {
+                    location.href = location.href
+                  }
+                }, 2000)
+              }}
+              style={{
+                backgroundColor: '#dc2626',
+                color: 'white',
+                padding: '12px 24px',
+                border: '3px solid #fbbf24',
+                borderRadius: '8px',
+                fontSize: '18px',
+                fontWeight: 'bold',
+                cursor: 'pointer',
+                boxShadow: '0 4px 8px rgba(0,0,0,0.3)'
+              }}
+            >
+              🔄 RELOAD PAGE NOW
+            </button>
+          </div>
+        </div>
+        
         <div className="flex items-center gap-4">
           <button
             onClick={() => setShowAttackerView(!showAttackerView)}
@@ -79,29 +138,6 @@ export default function SplitScreenSimulation({
           >
             {showAttackerView ? <EyeOff size={20} /> : <Eye size={20} />}
             {showAttackerView ? 'Hide' : 'Show'} Attacker View
-          </button>
-          <button
-            onClick={(e) => {
-              e.preventDefault()
-              e.stopPropagation()
-              console.log('🖱️ Reset button DOM event triggered')
-              resetSimulation()
-            }}
-            className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors border-2 border-yellow-400"
-            type="button"
-            style={{ 
-              backgroundColor: '#dc2626',
-              color: 'white',
-              padding: '8px 16px',
-              borderRadius: '8px',
-              border: '2px solid #facc15',
-              cursor: 'pointer',
-              fontSize: '16px',
-              fontWeight: 'bold'
-            }}
-          >
-            <RotateCcw size={20} />
-            🔄 RESET PAGE 🔄
           </button>
         </div>
       </div>
