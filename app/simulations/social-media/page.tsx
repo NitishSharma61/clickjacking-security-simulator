@@ -14,15 +14,6 @@ export default function SocialMediaSimulation() {
   const [fakeEmail, setFakeEmail] = useState('')
   const [fakePassword, setFakePassword] = useState('')
 
-  const resetSimulation = () => {
-    setClickPosition(null)
-    setAttackSuccess(false)
-    setShowFacebookNotification(false)
-    setShowFacebookLogin(false)
-    setLoginStep('login')
-    setFakeEmail('')
-    setFakePassword('')
-  }
 
   const handleVideoClick = async (e: React.MouseEvent<HTMLDivElement>) => {
     const rect = e.currentTarget.getBoundingClientRect()
@@ -470,7 +461,6 @@ export default function SocialMediaSimulation() {
           : "You successfully identified and avoided the clickjacking attack. The play button was actually a hidden social media share button."
       }
       warningSignsComponent={WarningSignsComponent}
-      onReset={resetSimulation}
     />
   )
 }

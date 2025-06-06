@@ -13,7 +13,6 @@ interface SplitScreenSimulationProps {
   explanation: string
   warningSignsComponent?: React.ReactNode
   maliciousOverlay?: React.ComponentType<{ transparencyLevel: number }>
-  onReset?: () => void
 }
 
 export default function SplitScreenSimulation({
@@ -24,8 +23,7 @@ export default function SplitScreenSimulation({
   onAttackDefended,
   explanation,
   warningSignsComponent,
-  maliciousOverlay: MaliciousOverlay,
-  onReset
+  maliciousOverlay: MaliciousOverlay
 }: SplitScreenSimulationProps) {
   const [showAttackerView, setShowAttackerView] = useState(true)
   const [attackRevealed, setAttackRevealed] = useState(false)
@@ -45,14 +43,8 @@ export default function SplitScreenSimulation({
   }
 
   const resetSimulation = () => {
-    setShowAttackerView(true)
-    setAttackRevealed(false)
-    setShowResult(false)
-    setTransparencyLevel(0)
-    setWasSuccessful(false)
-    if (onReset) {
-      onReset()
-    }
+    // Simply reload the page to reset everything completely
+    window.location.reload()
   }
 
   return (
@@ -211,10 +203,7 @@ export default function SplitScreenSimulation({
 
               <div className="flex gap-4 justify-center">
                 <button
-                  onClick={() => {
-                    setShowResult(false)
-                    resetSimulation()
-                  }}
+                  onClick={resetSimulation}
                   className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
                 >
                   Try Again
