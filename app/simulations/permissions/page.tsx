@@ -31,6 +31,14 @@ export default function PermissionsSimulation() {
     setDownloadProgress(0)
   }
 
+  const resetSimulation = () => {
+    stopAllStreams()
+    setPermissionRequested(false)
+    setAttackSuccess(false)
+    setShowFakeDownload(false)
+    setShowFakePermissionDialog(false)
+    setPermissionStep('camera')
+  }
 
   // Cleanup on component unmount
   useEffect(() => {
@@ -817,6 +825,7 @@ startxref
       }
       warningSignsComponent={WarningSignsComponent}
       maliciousOverlay={MaliciousOverlay}
+      onReset={resetSimulation}
     />
   )
 }

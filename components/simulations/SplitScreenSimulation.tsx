@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Eye, EyeOff, AlertTriangle, Shield } from 'lucide-react'
+import { Eye, EyeOff, RotateCcw, AlertTriangle, Shield } from 'lucide-react'
 
 interface SplitScreenSimulationProps {
   title: string
@@ -13,6 +13,7 @@ interface SplitScreenSimulationProps {
   explanation: string
   warningSignsComponent?: React.ReactNode
   maliciousOverlay?: React.ComponentType<{ transparencyLevel: number }>
+  onReset?: () => void
 }
 
 export default function SplitScreenSimulation({
@@ -23,7 +24,8 @@ export default function SplitScreenSimulation({
   onAttackDefended,
   explanation,
   warningSignsComponent,
-  maliciousOverlay: MaliciousOverlay
+  maliciousOverlay: MaliciousOverlay,
+  onReset
 }: SplitScreenSimulationProps) {
   const [showAttackerView, setShowAttackerView] = useState(true)
   const [attackRevealed, setAttackRevealed] = useState(false)
@@ -42,6 +44,19 @@ export default function SplitScreenSimulation({
     }
   }
 
+  const resetSimulation = () => {
+    // Reset all internal states
+    setShowAttackerView(true)
+    setAttackRevealed(false)
+    setShowResult(false)
+    setTransparencyLevel(0)
+    setWasSuccessful(false)
+    
+    // Call external reset function if provided
+    if (onReset) {
+      onReset()
+    }
+  }
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
@@ -56,6 +71,13 @@ export default function SplitScreenSimulation({
           >
             {showAttackerView ? <EyeOff size={20} /> : <Eye size={20} />}
             {showAttackerView ? 'Hide' : 'Show'} Attacker View
+          </button>
+          <button
+            onClick={resetSimulation}
+            className="flex items-center gap-2 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
+          >
+            <RotateCcw size={20} />
+            Reset
           </button>
         </div>
       </div>
@@ -194,13 +216,7 @@ export default function SplitScreenSimulation({
 
               <div className="flex gap-4 justify-center">
                 <button
-                  onClick={() => {
-                    setShowResult(false)
-                    setShowAttackerView(true)
-                    setAttackRevealed(false)
-                    setTransparencyLevel(0)
-                    setWasSuccessful(false)
-                  }}
+                  onClick={resetSimulation}
                   className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
                 >
                   Try Again
