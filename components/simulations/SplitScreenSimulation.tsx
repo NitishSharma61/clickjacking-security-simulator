@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Eye, EyeOff, RotateCcw, AlertTriangle, Shield } from 'lucide-react'
+import { Eye, EyeOff, AlertTriangle, Shield } from 'lucide-react'
 
 interface SplitScreenSimulationProps {
   title: string
@@ -42,94 +42,12 @@ export default function SplitScreenSimulation({
     }
   }
 
-  const resetSimulation = () => {
-    console.log('🔄 Reset button clicked - reloading page...')
-    
-    // Show alert to confirm button works
-    alert('Reset button clicked! Page will reload now.')
-    
-    // Simply reload the page to reset everything completely
-    try {
-      if (typeof window !== 'undefined') {
-        window.location.reload()
-      }
-    } catch (error) {
-      console.error('❌ Error reloading page:', error)
-      // Fallback method
-      try {
-        if (typeof window !== 'undefined') {
-          window.location.href = window.location.href
-        }
-      } catch (fallbackError) {
-        console.error('❌ Fallback reload also failed:', fallbackError)
-        // Final fallback - manually reset states
-        window.history.go(0)
-      }
-    }
-  }
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">{title}</h1>
         
-        {/* DEBUGGING: Completely isolated button area */}
-        <div 
-          className="p-4 bg-yellow-100 border-4 border-red-500 rounded-lg mb-4"
-          style={{ position: 'relative', zIndex: 10000 }}
-        >
-          <h2 className="text-lg font-bold text-red-800 mb-2">🔧 DEBUG ZONE - ISOLATED BUTTONS</h2>
-          
-          <div className="flex gap-4">
-            {/* Test if ANY button works */}
-            <button
-              onClick={() => {
-                alert('TEST BUTTON WORKS!')
-                console.log('Test button clicked successfully')
-              }}
-              style={{
-                backgroundColor: '#16a34a',
-                color: 'white',
-                padding: '12px 24px',
-                border: 'none',
-                borderRadius: '8px',
-                fontSize: '16px',
-                fontWeight: 'bold',
-                cursor: 'pointer'
-              }}
-            >
-              🟢 TEST CLICK
-            </button>
-            
-            {/* Reset button with maximum isolation */}
-            <button
-              onClick={() => {
-                alert('RESET BUTTON CLICKED! Reloading in 2 seconds...')
-                console.log('🔄 Reset button clicked - starting reload')
-                setTimeout(() => {
-                  try {
-                    location.reload()
-                  } catch (e) {
-                    location.href = location.href
-                  }
-                }, 2000)
-              }}
-              style={{
-                backgroundColor: '#dc2626',
-                color: 'white',
-                padding: '12px 24px',
-                border: '3px solid #fbbf24',
-                borderRadius: '8px',
-                fontSize: '18px',
-                fontWeight: 'bold',
-                cursor: 'pointer',
-                boxShadow: '0 4px 8px rgba(0,0,0,0.3)'
-              }}
-            >
-              🔄 RELOAD PAGE NOW
-            </button>
-          </div>
-        </div>
         
         <div className="flex items-center gap-4">
           <button
@@ -276,14 +194,14 @@ export default function SplitScreenSimulation({
 
               <div className="flex gap-4 justify-center">
                 <button
-                  onClick={(e) => {
-                    e.preventDefault()
-                    e.stopPropagation()
-                    console.log('🔄 Try Again button clicked')
-                    resetSimulation()
+                  onClick={() => {
+                    setShowResult(false)
+                    setShowAttackerView(true)
+                    setAttackRevealed(false)
+                    setTransparencyLevel(0)
+                    setWasSuccessful(false)
                   }}
                   className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                  type="button"
                 >
                   Try Again
                 </button>
