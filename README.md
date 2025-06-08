@@ -2,6 +2,14 @@
 
 An educational web application that demonstrates how clickjacking attacks work through hands-on experience. This platform helps users understand cybersecurity threats through interactive simulations in a safe environment.
 
+## 🎥 Video Demonstration
+
+Watch the [clickjacking.mp4](./clickjacking.mp4) video in this repository for a complete walkthrough of:
+- How clickjacking attacks work technically
+- Live demonstration of both attack scenarios
+- Real-time attacker dashboard capturing credentials
+- Educational insights and protection strategies
+
 ## 🌐 Live Demo
 
 - **Main Platform:** [https://clickjacking-security-simulator.vercel.app](https://clickjacking-security-simulator.vercel.app)
@@ -35,11 +43,12 @@ This platform creates lasting security awareness through experiential learning. 
 
 ### **Educational Components**
 - Split-screen interface showing both attacker and victim perspectives
-- Transparency slider to reveal hidden layers
+- Interactive opacity slider to reveal hidden malicious layers
 - Real-time analytics tracking learning progress
 - Interactive warnings for potentially real data
 - Comprehensive explanations of attack techniques
 - Direct link to live attacker dashboard
+- Video demonstration explaining the code and attack mechanisms
 
 ## 🛠️ Technical Stack
 
@@ -187,6 +196,15 @@ Users who complete this simulation will:
 ✅ Check for warning signs proactively  
 ✅ Develop permanent security skepticism  
 ✅ Share knowledge with colleagues  
+
+### Video Walkthrough Features
+
+The included `clickjacking.mp4` demonstrates:
+- **Technical Implementation**: How invisible iframes overlay legitimate content
+- **Attack Execution**: Step-by-step process of both social media and banking attacks
+- **Defense Mechanisms**: How to identify and prevent clickjacking
+- **Code Explanation**: Technical breakdown of the attack implementation
+- **Real-time Monitoring**: Live attacker dashboard showing captured data  
 
 ## 🚀 Deployment
 
