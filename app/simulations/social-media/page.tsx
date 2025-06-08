@@ -9,11 +9,13 @@ export default function SocialMediaSimulation() {
   const [clickPosition, setClickPosition] = useState<{ x: number; y: number } | null>(null)
   const [attackSuccess, setAttackSuccess] = useState(false)
   const [showFacebookNotification, setShowFacebookNotification] = useState(false)
+  const [iframeOpacity, setIframeOpacity] = useState(0)
 
   const resetSimulation = () => {
     setClickPosition(null)
     setAttackSuccess(false)
     setShowFacebookNotification(false)
+    setIframeOpacity(0)
   }
 
   // Listen for messages from fake Facebook tab
@@ -189,6 +191,54 @@ export default function SocialMediaSimulation() {
   )
 
 
+  const AttackerView = (
+    <div className="space-y-4">
+      <div className="bg-red-100 dark:bg-red-900/20 p-4 rounded-lg">
+        <h3 className="font-semibold text-red-800 dark:text-red-400 mb-2">
+          Attacker's Hidden Facebook Share Button
+        </h3>
+        <p className="text-sm text-gray-700 dark:text-gray-300 mb-4">
+          This invisible iframe is positioned over the play button. Control its transparency:
+        </p>
+        
+        <div className="space-y-3">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Iframe Opacity: {Math.round(iframeOpacity * 100)}%
+            </label>
+            <input
+              type="range"
+              min="0"
+              max="100"
+              value={iframeOpacity * 100}
+              onChange={(e) => setIframeOpacity(Number(e.target.value) / 100)}
+              className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700"
+            />
+          </div>
+          
+          <div className="relative bg-white dark:bg-gray-800 p-4 rounded border-2 border-dashed border-red-500">
+            <div 
+              className="absolute inset-0 bg-blue-600 flex items-center justify-center rounded transition-opacity"
+              style={{ opacity: iframeOpacity }}
+            >
+              <button className="bg-white text-blue-600 px-4 py-2 rounded font-semibold">
+                Share on Facebook
+              </button>
+            </div>
+            <div className="text-center py-8 text-gray-400">
+              <Play size={40} className="mx-auto mb-2" />
+              <p>Victim's Play Button</p>
+            </div>
+          </div>
+          
+          <p className="text-xs text-gray-600 dark:text-gray-400">
+            At 0% opacity, the iframe is invisible but still clickable!
+          </p>
+        </div>
+      </div>
+    </div>
+  )
+
   const WarningSignsComponent = (
     <ul className="space-y-2 text-sm">
       <li className="flex items-start">
@@ -214,7 +264,7 @@ export default function SocialMediaSimulation() {
     <SplitScreenSimulation
       title="Social Media Clickjacking Simulation"
       victimView={VictimView}
-      attackerView={null}
+      attackerView={AttackerView}
       onAttackSuccess={() => setAttackSuccess(true)}
       onAttackDefended={() => setAttackSuccess(false)}
       explanation={
