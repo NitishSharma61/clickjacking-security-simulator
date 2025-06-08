@@ -37,7 +37,13 @@ export async function GET(request: NextRequest) {
     // Transform data for frontend
     const formattedData = credentials?.map(cred => ({
       id: cred.entry_id,
-      timestamp: new Date(cred.captured_at).toLocaleTimeString(),
+      timestamp: new Date(cred.captured_at).toLocaleString('en-US', {
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: true,
+        timeZone: 'Asia/Kolkata' // Indian timezone
+      }),
       type: detectDataType(cred.data_type),
       sessionId: cred.victim_session,
       ...extractCredentialData(cred.captured_data)
