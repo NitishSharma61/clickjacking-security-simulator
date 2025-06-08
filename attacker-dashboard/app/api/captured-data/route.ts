@@ -43,7 +43,12 @@ export async function GET(request: NextRequest) {
     })
   } catch (error) {
     console.error('Failed to fetch captured data:', error)
-    return NextResponse.json({ error: 'Failed to fetch data' }, { 
+    return NextResponse.json({ 
+      error: 'Failed to fetch data', 
+      details: error instanceof Error ? error.message : 'Unknown error',
+      supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL ? 'Set' : 'Missing',
+      supabaseKey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ? 'Set' : 'Missing'
+    }, { 
       status: 500,
       headers: {
         'Access-Control-Allow-Origin': MAIN_APP_URL,
