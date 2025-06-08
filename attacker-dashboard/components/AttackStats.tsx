@@ -14,11 +14,42 @@ export default function AttackStats() {
   })
 
   useEffect(() => {
-    // Fetch stats from API
+    // Initial fetch
     fetchStats()
-    const interval = setInterval(fetchStats, 5000)
     
-    return () => clearInterval(interval)
+    // Smart polling - only when tab is active
+    let interval: NodeJS.Timeout
+    
+    const startPolling = () => {
+      // Poll every 10 seconds instead of 5 seconds
+      interval = setInterval(fetchStats, 10000)
+    }
+    
+    const stopPolling = () => {
+      if (interval) clearInterval(interval)
+    }
+    
+    // Start polling if document is visible
+    if (!document.hidden) {
+      startPolling()
+    }
+    
+    // Handle visibility change
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        stopPolling()
+      } else {
+        fetchStats() // Fetch immediately when tab becomes active
+        startPolling()
+      }
+    }
+    
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+    
+    return () => {
+      stopPolling()
+      document.removeEventListener('visibilitychange', handleVisibilityChange)
+    }
   }, [])
 
   const fetchStats = async () => {
