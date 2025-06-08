@@ -1,0 +1,55 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-hacker-dark text-hacker-green font-mono;
+  }
+}
+
+@layer components {
+  .terminal-window {
+    @apply bg-terminal border border-hacker-green/30 rounded-lg shadow-2xl;
+    box-shadow: 0 0 20px rgba(0, 255, 0, 0.3);
+  }
+  
+  .terminal-header {
+    @apply bg-black/50 px-4 py-2 border-b border-hacker-green/30 flex items-center gap-2;
+  }
+  
+  .terminal-dot {
+    @apply w-3 h-3 rounded-full;
+  }
+  
+  .data-row {
+    @apply border-b border-hacker-green/20 py-2 hover:bg-hacker-green/5 transition-colors;
+  }
+  
+  .blink {
+    animation: blink 1s infinite;
+  }
+  
+  @keyframes blink {
+    0%, 50% { opacity: 1; }
+    51%, 100% { opacity: 0; }
+  }
+  
+  .matrix-bg {
+    background-image: 
+      repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 2px,
+        rgba(0, 255, 0, 0.03) 2px,
+        rgba(0, 255, 0, 0.03) 4px
+      ),
+      repeating-linear-gradient(
+        90deg,
+        transparent,
+        transparent 2px,
+        rgba(0, 255, 0, 0.03) 2px,
+        rgba(0, 255, 0, 0.03) 4px
+      );
+  }
+}

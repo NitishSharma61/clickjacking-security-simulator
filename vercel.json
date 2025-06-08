@@ -1,0 +1,19 @@
+{
+  "name": "clickjacking-security-simulator",
+  "version": 2,
+  "builds": [
+    {
+      "src": "package.json",
+      "use": "@vercel/next"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "/$1"
+    }
+  ],
+  "env": {
+    "NEXT_PUBLIC_ATTACKER_DASHBOARD_URL": "https://clickjacking-attacker-dashboard.vercel.app"
+  }
+}

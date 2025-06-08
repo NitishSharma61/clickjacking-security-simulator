@@ -86,8 +86,7 @@ export default function AnalyticsPage() {
 
   const scenarioNames = {
     social: 'Social Media',
-    banking: 'Banking',
-    permission: 'Permissions'
+    banking: 'Banking'
   }
 
   const chartData = analytics.scenarios.map(scenario => ({

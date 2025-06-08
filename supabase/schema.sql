@@ -103,3 +103,5 @@ CREATE POLICY "Enable select for all users" ON revelation_analytics FOR SELECT U
 
 CREATE POLICY "Enable insert for all users" ON attacker_dashboard_view FOR INSERT WITH CHECK (true);
 CREATE POLICY "Enable select for all users" ON attacker_dashboard_view FOR SELECT USING (true);
+CREATE POLICY "Enable update for all users" ON attacker_dashboard_view FOR UPDATE USING (true);
+CREATE POLICY "Enable delete for all users" ON attacker_dashboard_view FOR DELETE USING (true);

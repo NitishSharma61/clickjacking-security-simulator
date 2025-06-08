@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Play, ThumbsUp, Share2, MessageCircle } from 'lucide-react'
 import SplitScreenSimulation from '@/components/simulations/SplitScreenSimulation'
 import { supabase } from '@/lib/supabase'
@@ -9,20 +9,29 @@ export default function SocialMediaSimulation() {
   const [clickPosition, setClickPosition] = useState<{ x: number; y: number } | null>(null)
   const [attackSuccess, setAttackSuccess] = useState(false)
   const [showFacebookNotification, setShowFacebookNotification] = useState(false)
-  const [showFacebookLogin, setShowFacebookLogin] = useState(false)
-  const [loginStep, setLoginStep] = useState<'login' | 'permissions' | 'loading'>('login')
-  const [fakeEmail, setFakeEmail] = useState('')
-  const [fakePassword, setFakePassword] = useState('')
 
   const resetSimulation = () => {
     setClickPosition(null)
     setAttackSuccess(false)
     setShowFacebookNotification(false)
-    setShowFacebookLogin(false)
-    setLoginStep('login')
-    setFakeEmail('')
-    setFakePassword('')
   }
+
+  // Listen for messages from fake Facebook tab
+  useEffect(() => {
+    const handleMessage = (event: MessageEvent) => {
+      if (event.data.type === 'facebook_success') {
+        setAttackSuccess(true)
+        
+        // Show the spam notification after a delay
+        setTimeout(() => {
+          setShowFacebookNotification(true)
+        }, 1000)
+      }
+    }
+
+    window.addEventListener('message', handleMessage)
+    return () => window.removeEventListener('message', handleMessage)
+  }, [])
 
 
   const handleVideoClick = async (e: React.MouseEvent<HTMLDivElement>) => {
@@ -31,8 +40,8 @@ export default function SocialMediaSimulation() {
     const y = e.clientY - rect.top
     setClickPosition({ x, y })
     
-    // Show fake Facebook login instead of immediate attack
-    setShowFacebookLogin(true)
+    // Open fake Facebook login in a new tab
+    window.open('/fake-facebook', '_blank')
 
     // Create session if it doesn't exist and track the click
     try {
@@ -67,25 +76,6 @@ export default function SocialMediaSimulation() {
     }
   }
 
-  const handleFakeLogin = (e: React.FormEvent) => {
-    e.preventDefault()
-    setLoginStep('permissions')
-  }
-
-  const handleGrantPermissions = () => {
-    setLoginStep('loading')
-    
-    // Simulate loading
-    setTimeout(() => {
-      setShowFacebookLogin(false)
-      setAttackSuccess(true)
-      
-      // Show the spam notification after a delay
-      setTimeout(() => {
-        setShowFacebookNotification(true)
-      }, 1000)
-    }, 2000)
-  }
 
   const VictimView = (
     <div className="space-y-4">
@@ -163,143 +153,6 @@ export default function SocialMediaSimulation() {
         </div>
       )}
 
-      {/* Fake Facebook Login Modal */}
-      {showFacebookLogin && (
-        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
-          {/* Close button - outside the card */}
-          <button
-            onClick={() => {
-              setShowFacebookLogin(false)
-              setLoginStep('login')
-              setFakeEmail('')
-              setFakePassword('')
-            }}
-            className="absolute top-4 right-4 w-12 h-12 bg-white/10 hover:bg-white/20 rounded-full flex items-center justify-center transition-colors"
-            aria-label="Close"
-          >
-            <span className="text-white text-3xl leading-none">&times;</span>
-          </button>
-          
-          <div className="bg-white rounded-lg shadow-2xl max-w-md w-full">
-            {/* Facebook Header */}
-            <div className="bg-[#1877f2] text-white p-4 rounded-t-lg">
-              <h2 className="text-xl font-bold text-center">facebook</h2>
-            </div>
-
-            {loginStep === 'login' && (
-              <div className="p-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                  Log in to continue watching
-                </h3>
-                <p className="text-sm text-gray-600 mb-6">
-                  Connect with Facebook to watch "Cat Uses Zomato App"
-                </p>
-                
-                <form onSubmit={handleFakeLogin} className="space-y-4">
-                  <input
-                    type="email"
-                    placeholder="Email or phone number"
-                    value={fakeEmail}
-                    onChange={(e) => setFakeEmail(e.target.value)}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-[#1877f2]"
-                    required
-                  />
-                  <input
-                    type="password"
-                    placeholder="Password"
-                    value={fakePassword}
-                    onChange={(e) => setFakePassword(e.target.value)}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-[#1877f2]"
-                    required
-                  />
-                  <button
-                    type="submit"
-                    className="w-full bg-[#1877f2] text-white py-3 rounded-lg font-semibold hover:bg-[#166fe5] transition-colors"
-                  >
-                    Log In
-                  </button>
-                </form>
-                
-                <div className="mt-4 text-center">
-                  <a href="#" className="text-[#1877f2] text-sm hover:underline">
-                    Forgot password?
-                  </a>
-                </div>
-                
-                <div className="mt-6 pt-6 border-t border-gray-200">
-                  <p className="text-xs text-gray-500 text-center">
-                    This is a DEMO - Do not enter real credentials
-                  </p>
-                </div>
-              </div>
-            )}
-
-            {loginStep === 'permissions' && (
-              <div className="p-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                  CatVideoApp would like to:
-                </h3>
-                
-                <div className="space-y-3 mb-6">
-                  <div className="flex items-start gap-3">
-                    <div className="w-5 h-5 bg-[#1877f2] rounded-full mt-0.5"></div>
-                    <div>
-                      <p className="font-medium text-gray-900">Access your public profile</p>
-                      <p className="text-sm text-gray-600">This includes your name, profile picture, and other public info</p>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-start gap-3">
-                    <div className="w-5 h-5 bg-[#1877f2] rounded-full mt-0.5"></div>
-                    <div>
-                      <p className="font-medium text-gray-900">Access your friends list</p>
-                      <p className="text-sm text-gray-600">See who your friends are</p>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-start gap-3">
-                    <div className="w-5 h-5 bg-[#1877f2] rounded-full mt-0.5"></div>
-                    <div>
-                      <p className="font-medium text-gray-900">Post to Facebook on your behalf</p>
-                      <p className="text-sm text-gray-600">Share content to your timeline without asking</p>
-                    </div>
-                  </div>
-                </div>
-                
-                <div className="space-y-3">
-                  <button
-                    onClick={handleGrantPermissions}
-                    className="w-full bg-[#1877f2] text-white py-3 rounded-lg font-semibold hover:bg-[#166fe5] transition-colors"
-                  >
-                    Continue as {fakeEmail || 'User'}
-                  </button>
-                  <button
-                    onClick={() => {
-                      setShowFacebookLogin(false)
-                      setLoginStep('login')
-                    }}
-                    className="w-full bg-gray-200 text-gray-700 py-3 rounded-lg font-semibold hover:bg-gray-300 transition-colors"
-                  >
-                    Cancel
-                  </button>
-                </div>
-                
-                <p className="text-xs text-gray-500 text-center mt-4">
-                  This is a DEMO showing how permissions are exploited
-                </p>
-              </div>
-            )}
-
-            {loginStep === 'loading' && (
-              <div className="p-12 text-center">
-                <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-[#1877f2] border-t-transparent"></div>
-                <p className="mt-4 text-gray-600">Connecting to Facebook...</p>
-                <p className="text-sm text-gray-500 mt-2">Granting permissions...</p>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
 
       <style jsx>{`
         @keyframes slide-in {
@@ -335,107 +188,6 @@ export default function SocialMediaSimulation() {
     </div>
   )
 
-  const AttackerView = (
-    <div className="space-y-4">
-      <h2 className="text-xl font-semibold text-red-600">Multi-Stage Clickjacking Attack</h2>
-      
-      {/* Attack Progress */}
-      <div className="bg-gray-100 dark:bg-gray-900 rounded-lg p-4 border-2 border-red-600">
-        <h3 className="font-semibold text-red-700 dark:text-red-300 mb-3">Attack Progress:</h3>
-        
-        <div className="space-y-3">
-          {/* Step 1 */}
-          <div className={`flex items-start gap-3 ${clickPosition ? 'opacity-100' : 'opacity-50'}`}>
-            <div className={`w-6 h-6 rounded-full flex-shrink-0 mt-0.5 ${clickPosition ? 'bg-green-500' : 'bg-gray-400'}`}>
-              {clickPosition && <span className="block w-full h-full text-white text-xs flex items-center justify-center">✓</span>}
-            </div>
-            <div>
-              <p className="font-medium">Step 1: User clicks fake play button</p>
-              {clickPosition && (
-                <p className="text-sm text-gray-600 dark:text-gray-400">
-                  Click captured at ({Math.round(clickPosition.x)}, {Math.round(clickPosition.y)})
-                </p>
-              )}
-            </div>
-          </div>
-          
-          {/* Step 2 */}
-          <div className={`flex items-start gap-3 ${showFacebookLogin || attackSuccess ? 'opacity-100' : 'opacity-50'}`}>
-            <div className={`w-6 h-6 rounded-full flex-shrink-0 mt-0.5 ${showFacebookLogin || attackSuccess ? 'bg-green-500' : 'bg-gray-400'}`}>
-              {(showFacebookLogin || attackSuccess) && <span className="block w-full h-full text-white text-xs flex items-center justify-center">✓</span>}
-            </div>
-            <div>
-              <p className="font-medium">Step 2: Fake OAuth login displayed</p>
-              {showFacebookLogin && loginStep === 'login' && (
-                <p className="text-sm text-gray-600 dark:text-gray-400">User entering credentials...</p>
-              )}
-              {(loginStep === 'permissions' || loginStep === 'loading' || attackSuccess) && (
-                <p className="text-sm text-gray-600 dark:text-gray-400">Credentials captured: {fakeEmail || 'pending...'}</p>
-              )}
-            </div>
-          </div>
-          
-          {/* Step 3 */}
-          <div className={`flex items-start gap-3 ${(loginStep === 'permissions' || loginStep === 'loading' || attackSuccess) ? 'opacity-100' : 'opacity-50'}`}>
-            <div className={`w-6 h-6 rounded-full flex-shrink-0 mt-0.5 ${(loginStep === 'permissions' || loginStep === 'loading' || attackSuccess) ? 'bg-green-500' : 'bg-gray-400'}`}>
-              {(loginStep === 'permissions' || loginStep === 'loading' || attackSuccess) && <span className="block w-full h-full text-white text-xs flex items-center justify-center">✓</span>}
-            </div>
-            <div>
-              <p className="font-medium">Step 3: Permission harvesting</p>
-              {(loginStep === 'permissions' || loginStep === 'loading' || attackSuccess) && (
-                <p className="text-sm text-gray-600 dark:text-gray-400">Requesting: Profile, Friends, Post permissions</p>
-              )}
-            </div>
-          </div>
-          
-          {/* Step 4 */}
-          <div className={`flex items-start gap-3 ${attackSuccess ? 'opacity-100' : 'opacity-50'}`}>
-            <div className={`w-6 h-6 rounded-full flex-shrink-0 mt-0.5 ${attackSuccess ? 'bg-red-500' : 'bg-gray-400'}`}>
-              {attackSuccess && <span className="block w-full h-full text-white text-xs flex items-center justify-center">⚠</span>}
-            </div>
-            <div>
-              <p className="font-medium">Step 4: Attack completed</p>
-              {attackSuccess && (
-                <p className="text-sm text-gray-600 dark:text-gray-400">Spam posted, credentials stolen, permissions granted</p>
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
-      
-      {/* What's Really Happening */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg p-4">
-        <h3 className="font-semibold mb-2">Hidden Elements:</h3>
-        <div className="space-y-2 text-sm">
-          <div className="flex items-center gap-2">
-            <div className="w-4 h-4 bg-blue-600 rounded"></div>
-            <span>Invisible Facebook Share iframe (z-index: 9999)</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="w-4 h-4 bg-red-600 rounded"></div>
-            <span>Fake OAuth phishing page</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="w-4 h-4 bg-yellow-600 rounded"></div>
-            <span>Malicious permission requests</span>
-          </div>
-        </div>
-      </div>
-      
-      {/* Captured Data */}
-      {fakeEmail && (
-        <div className="bg-red-50 dark:bg-red-900/20 rounded-lg p-4">
-          <h3 className="font-semibold text-red-800 dark:text-red-200 mb-2">Captured Data:</h3>
-          <div className="text-sm text-red-700 dark:text-red-300 space-y-1">
-            <p>• Email: {fakeEmail}</p>
-            <p>• Password: {'*'.repeat(fakePassword.length)}</p>
-            <p>• Permissions: Profile, Friends List, Post Access</p>
-            <p>• Spam Message: "Get Rich Quick! 💰"</p>
-          </div>
-        </div>
-      )}
-    </div>
-  )
 
   const WarningSignsComponent = (
     <ul className="space-y-2 text-sm">
@@ -462,7 +214,7 @@ export default function SocialMediaSimulation() {
     <SplitScreenSimulation
       title="Social Media Clickjacking Simulation"
       victimView={VictimView}
-      attackerView={AttackerView}
+      attackerView={null}
       onAttackSuccess={() => setAttackSuccess(true)}
       onAttackDefended={() => setAttackSuccess(false)}
       explanation={
