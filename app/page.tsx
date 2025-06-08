@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { Eye, AlertTriangle } from 'lucide-react'
+import { ATTACKER_DASHBOARD_URL } from '@/lib/config'
 
 export default function Home() {
   const simulations = [
@@ -66,8 +67,8 @@ export default function Home() {
           </h2>
           <p className="text-yellow-700 text-sm">
             1. Open <strong>Attacker Dashboard</strong> in another tab: 
-            <a href="http://localhost:3001" target="_blank" className="text-blue-600 hover:underline ml-2">
-              http://localhost:3001
+            <a href={ATTACKER_DASHBOARD_URL} target="_blank" className="text-blue-600 hover:underline ml-2">
+              {ATTACKER_DASHBOARD_URL}
             </a>
           </p>
           <p className="text-yellow-700 text-sm mt-2">
