@@ -112,6 +112,16 @@ export default function SocialMediaSimulation() {
             </p>
           </div>
         </div>
+        
+        {/* Hidden Facebook iframe overlay - controlled by opacity slider */}
+        <div 
+          className="absolute inset-0 bg-blue-600 flex items-center justify-center transition-opacity"
+          style={{ opacity: iframeOpacity }}
+        >
+          <button className="bg-white text-blue-600 px-6 py-3 rounded-lg font-bold text-lg shadow-lg">
+            Share on Facebook
+          </button>
+        </div>
       </div>
       <div className="flex items-center justify-between text-gray-600 dark:text-gray-400">
         <div className="flex items-center gap-4">
@@ -195,10 +205,10 @@ export default function SocialMediaSimulation() {
     <div className="space-y-4">
       <div className="bg-red-100 dark:bg-red-900/20 p-4 rounded-lg">
         <h3 className="font-semibold text-red-800 dark:text-red-400 mb-2">
-          Attacker's Hidden Facebook Share Button
+          Attacker's Control Panel
         </h3>
         <p className="text-sm text-gray-700 dark:text-gray-300 mb-4">
-          This invisible iframe is positioned over the play button. Control its transparency:
+          Control the invisible Facebook iframe overlay. As you increase opacity, the cat video fades and the share button appears!
         </p>
         
         <div className="space-y-3">
@@ -218,22 +228,28 @@ export default function SocialMediaSimulation() {
           
           <div className="relative bg-white dark:bg-gray-800 p-4 rounded border-2 border-dashed border-red-500">
             <div 
-              className="absolute inset-0 bg-blue-600 flex items-center justify-center rounded transition-opacity"
+              className="absolute inset-0 bg-blue-600 flex items-center justify-center rounded transition-opacity z-10"
               style={{ opacity: iframeOpacity }}
             >
               <button className="bg-white text-blue-600 px-4 py-2 rounded font-semibold">
                 Share on Facebook
               </button>
             </div>
-            <div className="text-center py-8 text-gray-400">
+            <div className="text-center py-8 text-gray-400" style={{ opacity: 1 - iframeOpacity * 0.8 }}>
               <Play size={40} className="mx-auto mb-2" />
               <p>Victim's Play Button</p>
             </div>
           </div>
           
-          <p className="text-xs text-gray-600 dark:text-gray-400">
-            At 0% opacity, the iframe is invisible but still clickable!
-          </p>
+          <div className="bg-yellow-50 dark:bg-yellow-900/20 p-3 rounded text-sm">
+            <p className="text-yellow-800 dark:text-yellow-400 font-medium">
+              {iframeOpacity === 0 
+                ? "⚠️ Iframe is invisible but still clickable!" 
+                : iframeOpacity < 0.5 
+                ? "👁️ Barely visible - victims won't notice!" 
+                : "🎯 More visible - easier to spot the attack"}
+            </p>
+          </div>
         </div>
       </div>
     </div>
