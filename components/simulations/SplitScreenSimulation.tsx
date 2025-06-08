@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Eye, EyeOff, RotateCcw, AlertTriangle, Shield } from 'lucide-react'
+import { ATTACKER_DASHBOARD_URL } from '@/lib/config'
 
 interface SplitScreenSimulationProps {
   title: string
@@ -180,7 +181,7 @@ export default function SplitScreenSimulation({
             Open the dedicated <strong>Attacker Dashboard</strong> in another tab to watch your data being stolen as you type:
           </p>
           <a 
-            href="http://localhost:3001" 
+            href={ATTACKER_DASHBOARD_URL} 
             target="_blank"
             className="inline-block bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-lg font-bold transition-colors"
           >
